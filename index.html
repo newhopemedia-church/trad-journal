@@ -147,7 +147,13 @@
         </div>
         <div class="form-group">
           <label for="f-pair">Валютная пара *</label>
-          <input type="text" id="f-pair" placeholder="EUR/USD" />
+          <select id="f-pair">
+            <option value="">— выбрать —</option>
+            <option>EUR/USD</option>
+            <option>GBP/USD</option>
+            <option>USD/CHF</option>
+            <option>AUD/USD</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="f-dir">Направление *</label>
@@ -314,7 +320,7 @@ function showAlert(id, ms=2800) {
 }
 
 async function saveTrade() {
-  const pair = document.getElementById('f-pair').value.trim().toUpperCase();
+  const pair = document.getElementById('f-pair').value.trim();
   const dir = document.getElementById('f-dir').value;
   const pnlRaw = document.getElementById('f-pnl').value;
   if(!pair || !dir || pnlRaw === '') {
