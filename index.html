@@ -146,6 +146,13 @@
   .diary-delete-btn:hover{color:#D85A30;background:#faece7;}
   .diary-empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
   .diary-empty i{font-size:36px;display:block;margin-bottom:10px;}
+  #d-drop-zone:hover{border-color:var(--accent);color:var(--accent);}
+  #d-drop-zone.dragover{border-color:var(--accent);background:var(--accent-light);}
+  .diary-entry-img{max-width:100%;border-radius:var(--radius);border:1px solid var(--border);margin-top:10px;cursor:pointer;transition:opacity .15s;}
+  .diary-entry-img:hover{opacity:0.85;}
+  .img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;cursor:zoom-out;}
+  .img-modal.open{display:flex;}
+  .img-modal img{max-width:90vw;max-height:90vh;border-radius:var(--radius);box-shadow:0 4px 40px rgba(0,0,0,0.5);}
   @media(max-width:600px){
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .form-grid{grid-template-columns:1fr;}
@@ -356,6 +363,20 @@
           <label for="d-body">Текст записи</label>
           <textarea id="d-body" style="min-height:120px;" placeholder="Напиши правило, наблюдение или мысль..."></textarea>
         </div>
+        <div class="form-group full">
+          <label>Изображение (скриншот)</label>
+          <div id="d-drop-zone" onclick="document.getElementById('d-img-input').click()" style="border:2px dashed var(--border-md);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;color:var(--text3);font-size:13px;transition:border-color .15s;background:var(--surface2);">
+            <i class="ti ti-photo-plus" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+            Нажми или перетащи изображение сюда
+          </div>
+          <input type="file" id="d-img-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
+          <div id="d-img-preview" style="margin-top:8px;display:none;">
+            <div style="position:relative;display:inline-block;">
+              <img id="d-img-preview-img" style="max-width:100%;max-height:200px;border-radius:var(--radius);border:1px solid var(--border);" />
+              <button onclick="clearImage()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="diary-save-btn" onclick="saveDiaryEntry()"><i class="ti ti-device-floppy"></i> Сохранить</button>
@@ -421,7 +442,7 @@ function switchTab(t) {
   if(t==='log') renderLog();
   if(t==='stats') renderStats();
   if(t==='calendar') renderCalendar();
-  if(t==='diary') { loadDiary(); renderDiary(); }
+  if(t==='diary') { loadDiary(); renderDiary(); setTimeout(initDiaryDrop, 50); }
 }
 
 function selectEmotion(btn) {
@@ -698,29 +719,76 @@ async function loadDiary() {
   } catch(e) { diaryEntries = []; }
 }
 
+function initDiaryDrop() {
+  const zone = document.getElementById('d-drop-zone');
+  if(!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentImageData = ev.target.result;
+        document.getElementById('d-img-preview-img').src = currentImageData;
+        document.getElementById('d-img-preview').style.display = 'block';
+        zone.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
 function saveDiaryLocal() {
   try { localStorage.setItem('diary_entries_v1', JSON.stringify(diaryEntries)); } catch(e) {}
 }
+
+let currentImageData = null;
 
 function toggleDiaryForm() {
   const f = document.getElementById('diary-form');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
   if(f.style.display === 'block') {
+    setTimeout(initDiaryDrop, 50);
     document.getElementById('d-title').value = '';
     document.getElementById('d-body').value = '';
     document.getElementById('d-cat').value = 'rules';
+    clearImage();
   }
+}
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentImageData = e.target.result;
+    document.getElementById('d-img-preview-img').src = currentImageData;
+    document.getElementById('d-img-preview').style.display = 'block';
+    document.getElementById('d-drop-zone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  currentImageData = null;
+  document.getElementById('d-img-preview').style.display = 'none';
+  document.getElementById('d-drop-zone').style.display = 'block';
+  document.getElementById('d-img-input').value = '';
 }
 
 function saveDiaryEntry() {
   const title = document.getElementById('d-title').value.trim();
   const body = document.getElementById('d-body').value.trim();
   const cat = document.getElementById('d-cat').value;
-  if(!body) { alert('Напиши текст записи'); return; }
+  if(!body && !currentImageData) { alert('Напиши текст или добавь изображение'); return; }
   const entry = {
     id: Date.now(),
     title: title || 'Без заголовка',
     body, cat,
+    image: currentImageData || null,
     date: new Date().toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
           new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})
   };
@@ -761,11 +829,15 @@ function renderDiary() {
         <span class="diary-tag diary-tag-${e.cat}">${DIARY_TAG_LABELS[e.cat]||e.cat}</span>
         <span class="diary-entry-date">${e.date}</span>
       </div>
-      <div class="diary-entry-body">${e.body}</div>
+      ${e.body ? `<div class="diary-entry-body">${e.body}</div>` : ''}
+      ${e.image ? `<img class="diary-entry-img" src="${e.image}" onclick="document.getElementById('img-modal-img').src='${e.image}';document.getElementById('img-modal').classList.add('open')" />` : ''}
     </div>
   `).join('');
 }
 // ========== END DIARY ==========
 </script>
+<div class="img-modal" id="img-modal" onclick="document.getElementById('img-modal').classList.remove('open')">
+  <img id="img-modal-img" src="" alt="preview" />
+</div>
 </body>
 </html>
