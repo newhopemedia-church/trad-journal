@@ -114,6 +114,38 @@
   .cal-pnl{font-size:11px;font-weight:600;font-family:"IBM Plex Mono",monospace;margin-top:2px;}
   .cal-pnl.pos{color:#0F6E56;}.cal-pnl.neg{color:#993C1D;}
   .cal-count{font-size:10px;color:var(--text3);margin-top:1px;}
+  .diary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
+  .diary-filters{display:flex;gap:6px;flex-wrap:wrap;}
+  .diary-filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border-md);background:var(--surface2);font-family:'Manrope',sans-serif;font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+  .diary-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+  .diary-add-btn{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;}
+  .diary-add-btn:hover{background:var(--accent-dark);}
+  .diary-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+  .diary-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .diary-save-btn{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .diary-save-btn:hover{background:var(--accent-dark);}
+  .diary-cancel-btn{padding:10px 16px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Manrope',sans-serif;font-size:13px;cursor:pointer;}
+  .diary-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:10px;box-shadow:var(--shadow);position:relative;}
+  .diary-entry-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;}
+  .diary-entry-title{font-size:15px;font-weight:600;color:var(--text);}
+  .diary-entry-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .diary-entry-date{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .diary-tag{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+  .diary-tag-rules{background:#e1f5ee;color:#085041;}
+  .diary-tag-notes{background:#e8f0fe;color:#1a3a8a;}
+  .diary-tag-trades{background:#fef3e2;color:#7a4a00;}
+  .diary-tag-psychology{background:#fce8f3;color:#7a1a5a;}
+  .diary-tag-other{background:#f1efe8;color:#444441;}
+  [data-theme="dark"] .diary-tag-rules{background:#0a2e22;color:#5DCAA5;}
+  [data-theme="dark"] .diary-tag-notes{background:#0a1a3a;color:#93c5fd;}
+  [data-theme="dark"] .diary-tag-trades{background:#2a1a00;color:#fbbf24;}
+  [data-theme="dark"] .diary-tag-psychology{background:#2a0a1a;color:#f9a8d4;}
+  [data-theme="dark"] .diary-tag-other{background:#2c2c2a;color:#b4b2a9;}
+  .diary-entry-body{font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap;}
+  .diary-delete-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:4px 7px;border-radius:5px;flex-shrink:0;transition:all .15s;}
+  .diary-delete-btn:hover{color:#D85A30;background:#faece7;}
+  .diary-empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
+  .diary-empty i{font-size:36px;display:block;margin-bottom:10px;}
   @media(max-width:600px){
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .form-grid{grid-template-columns:1fr;}
@@ -148,6 +180,7 @@
     <button class="tab" onclick="switchTab('log')"><i class="ti ti-list" aria-hidden="true"></i> <span>Журнал</span></button>
     <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar" aria-hidden="true"></i> <span>Аналитика</span></button>
     <button class="tab" onclick="switchTab('calendar')"><i class="ti ti-calendar" aria-hidden="true"></i> <span>Календарь</span></button>
+    <button class="tab" onclick="switchTab('diary')"><i class="ti ti-notebook" aria-hidden="true"></i> <span>Дневник</span></button>
   </div>
 
   <!-- ADD -->
@@ -287,6 +320,51 @@
     </div>
     <div id="cal-day-detail"></div>
   </div>
+  <!-- DIARY -->
+  <div id="tab-diary" class="section">
+    <div class="diary-header">
+      <div class="diary-filters">
+        <button class="diary-filter-btn active" onclick="filterDiary('all', this)">Все</button>
+        <button class="diary-filter-btn" onclick="filterDiary('rules', this)">📋 Правила</button>
+        <button class="diary-filter-btn" onclick="filterDiary('notes', this)">📝 Заметки</button>
+        <button class="diary-filter-btn" onclick="filterDiary('trades', this)">💹 По сделкам</button>
+        <button class="diary-filter-btn" onclick="filterDiary('psychology', this)">🧠 Психология</button>
+        <button class="diary-filter-btn" onclick="filterDiary('other', this)">📌 Другое</button>
+      </div>
+      <button class="diary-add-btn" onclick="toggleDiaryForm()">
+        <i class="ti ti-plus"></i> Добавить запись
+      </button>
+    </div>
+
+    <div class="diary-form" id="diary-form" style="display:none;">
+      <div class="diary-form-grid">
+        <div class="form-group">
+          <label for="d-title">Заголовок</label>
+          <input type="text" id="d-title" placeholder="Например: Правило риска 1%" />
+        </div>
+        <div class="form-group">
+          <label for="d-cat">Категория</label>
+          <select id="d-cat">
+            <option value="rules">📋 Правила</option>
+            <option value="notes">📝 Заметки</option>
+            <option value="trades">💹 По сделкам</option>
+            <option value="psychology">🧠 Психология</option>
+            <option value="other">📌 Другое</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label for="d-body">Текст записи</label>
+          <textarea id="d-body" style="min-height:120px;" placeholder="Напиши правило, наблюдение или мысль..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="diary-save-btn" onclick="saveDiaryEntry()"><i class="ti ti-device-floppy"></i> Сохранить</button>
+        <button class="diary-cancel-btn" onclick="toggleDiaryForm()">Отмена</button>
+      </div>
+    </div>
+
+    <div id="diary-entries"></div>
+  </div>
 </div>
 
 <script>
@@ -337,12 +415,13 @@ async function init() {
 init();
 
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['add','log','stats','calendar'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['add','log','stats','calendar','diary'][i]===t));
   document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='log') renderLog();
   if(t==='stats') renderStats();
   if(t==='calendar') renderCalendar();
+  if(t==='diary') { loadDiary(); renderDiary(); }
 }
 
 function selectEmotion(btn) {
@@ -602,6 +681,91 @@ function showDayDetail(dateStr) {
   html += '</tbody></table></div>';
   document.getElementById('cal-day-detail').innerHTML = html;
 }
+
+// ========== DIARY ==========
+let diaryEntries = [];
+let diaryFilter = 'all';
+
+const DIARY_TAG_LABELS = {
+  rules: '📋 Правила', notes: '📝 Заметки', trades: '💹 По сделкам',
+  psychology: '🧠 Психология', other: '📌 Другое'
+};
+
+async function loadDiary() {
+  try {
+    const stored = localStorage.getItem('diary_entries_v1');
+    diaryEntries = stored ? JSON.parse(stored) : [];
+  } catch(e) { diaryEntries = []; }
+}
+
+function saveDiaryLocal() {
+  try { localStorage.setItem('diary_entries_v1', JSON.stringify(diaryEntries)); } catch(e) {}
+}
+
+function toggleDiaryForm() {
+  const f = document.getElementById('diary-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if(f.style.display === 'block') {
+    document.getElementById('d-title').value = '';
+    document.getElementById('d-body').value = '';
+    document.getElementById('d-cat').value = 'rules';
+  }
+}
+
+function saveDiaryEntry() {
+  const title = document.getElementById('d-title').value.trim();
+  const body = document.getElementById('d-body').value.trim();
+  const cat = document.getElementById('d-cat').value;
+  if(!body) { alert('Напиши текст записи'); return; }
+  const entry = {
+    id: Date.now(),
+    title: title || 'Без заголовка',
+    body, cat,
+    date: new Date().toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+          new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})
+  };
+  diaryEntries.unshift(entry);
+  saveDiaryLocal();
+  toggleDiaryForm();
+  renderDiary();
+}
+
+function deleteDiaryEntry(id) {
+  if(!confirm('Удалить запись?')) return;
+  diaryEntries = diaryEntries.filter(e => e.id !== id);
+  saveDiaryLocal();
+  renderDiary();
+}
+
+function filterDiary(cat, btn) {
+  diaryFilter = cat;
+  document.querySelectorAll('.diary-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDiary();
+}
+
+function renderDiary() {
+  const filtered = diaryFilter === 'all' ? diaryEntries : diaryEntries.filter(e => e.cat === diaryFilter);
+  const container = document.getElementById('diary-entries');
+  if(!filtered.length) {
+    container.innerHTML = '<div class="diary-empty"><i class="ti ti-notebook"></i>Записей пока нет.<br>Нажми «Добавить запись» чтобы начать.</div>';
+    return;
+  }
+  container.innerHTML = filtered.map(e => `
+    <div class="diary-entry">
+      <div class="diary-entry-header">
+        <div class="diary-entry-title">${e.title}</div>
+        <button class="diary-delete-btn" onclick="deleteDiaryEntry(${e.id})" title="Удалить"><i class="ti ti-trash"></i></button>
+      </div>
+      <div class="diary-entry-meta">
+        <span class="diary-tag diary-tag-${e.cat}">${DIARY_TAG_LABELS[e.cat]||e.cat}</span>
+        <span class="diary-entry-date">${e.date}</span>
+      </div>
+      <div class="diary-entry-body">${e.body}</div>
+    </div>
+  `).join('');
+}
+// ========== END DIARY ==========
 </script>
 </body>
 </html>
